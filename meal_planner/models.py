@@ -30,9 +30,9 @@ class Meal(models.Model):
     def __str__(self):
         return self.name
 
-# Through model for Recipe and Food (quantities)
+# Through model for Meal and Food (quantities)
 class MealFood(models.Model):
-    recipe = models.ForeignKey(Meal, on_delete=models.CASCADE)
+    meal = models.ForeignKey(Meal, on_delete=models.CASCADE)
     food = models.ForeignKey(Food, on_delete=models.CASCADE)
     quantity = models.FloatField(help_text="Quantity in grams or units")
 

@@ -1,9 +1,9 @@
 
 from django.contrib import admin
-from .models import Food, Recipe, RecipeFood, MealPlan, UserPreference, UserProgress
+from .models import Food, Meal, MealFood, MealPlan, AgentMemory
 
-class RecipeFoodInline(admin.TabularInline):
-	model = RecipeFood
+class MealFoodInline(admin.TabularInline):
+	model = MealFood
 	extra = 1
 
 @admin.register(Food)
@@ -11,23 +11,21 @@ class FoodAdmin(admin.ModelAdmin):
 	list_display = ("name", "category", "calories", "protein", "carbs", "fat")
 	search_fields = ("name", "category")
 
-@admin.register(Recipe)
-class RecipeAdmin(admin.ModelAdmin):
+@admin.register(Meal)
+class MealAdmin(admin.ModelAdmin):
 	list_display = ("name", "created_by")
 	search_fields = ("name",)
-	inlines = [RecipeFoodInline]
+	inlines = [MealFoodInline]
 
 @admin.register(MealPlan)
 class MealPlanAdmin(admin.ModelAdmin):
-	list_display = ("user", "date", "meal_type", "recipe")
+	list_display = ("user", "date", "meal_type", "meal")
 	list_filter = ("meal_type", "date", "user")
 
-@admin.register(UserPreference)
-class UserPreferenceAdmin(admin.ModelAdmin):
-	list_display = ("user", "goal")
-	search_fields = ("user__username", "goal")
 
-@admin.register(UserProgress)
-class UserProgressAdmin(admin.ModelAdmin):
-	list_display = ("user", "date", "weight_kg", "bmi")
-	list_filter = ("user", "date")
+@admin.register(AgentMemory)
+class AgentMemoryAdmin(admin.ModelAdmin):
+	list_display = ("user", "memory_type", "importance", "active", "created_at", "last_accessed")
+	search_fields = ("user__username", "memory_type", "content")
+
+

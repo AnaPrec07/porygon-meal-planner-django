@@ -63,15 +63,7 @@ def user_mealplans(request):
 			serializer.save()
 			return Response(serializer.data)
 		return Response(serializer.errors, status=400)
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def user_progress(request):
-	"""
-	Returns all UserProgress records for the authenticated user, ordered by date.
-	"""
-	progress = UserProgress.objects.filter(user=request.user).order_by('date')
-	serializer = UserProgressSerializer(progress, many=True)
-	return Response(serializer.data)
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def accept_recipe(request):
@@ -120,7 +112,7 @@ def accept_recipe(request):
 		food_objs.append(food_obj)
 
 	# Save recipe if not exist
-	recipe, created = Recipe.objects.get_or_create(
+	recipe, created = Meal.objects.get_or_create(
 		name=recipe_data['name'],
 		defaults={
 			'description': recipe_data.get('description', ''),
@@ -131,7 +123,7 @@ def accept_recipe(request):
 	# If new, add foods to recipe
 	if created:
 		for food_obj in food_objs:
-			RecipeFood.objects.create(recipe=recipe, food=food_obj, quantity=100)  # Default quantity
+			MealFood.objects.create(recipe=recipe, food=food_obj, quantity=100)  # Default quantity
 
 	# Add to MealPlan
 	mealplan, _ = MealPlan.objects.get_or_create(
@@ -141,14 +133,14 @@ def accept_recipe(request):
 		defaults={'recipe': recipe}
 	)
 	if not _:
-		mealplan.recipe = recipe
+		mealplan.meal = recipe
 		mealplan.save()
 
 	return Response({'message': 'Recipe accepted and added to meal plan.'}, status=201)
 
 from rest_framework import viewsets, permissions
-from .models import Food, Recipe, RecipeFood, MealPlan, UserPreference, UserProgress
-from .serializers import FoodSerializer, RecipeSerializer, RecipeFoodSerializer, MealPlanSerializer, UserPreferenceSerializer, UserProgressSerializer
+from .models import Food, Meal, MealFood, MealPlan, AgentMemory
+from .serializers import FoodSerializer, MealSerializer, MealFoodSerializer, MealPlanSerializer, AgentMemorySerializer
 from django.contrib.auth.models import User
 from rest_framework import generics
 from rest_framework.response import Response
@@ -178,10 +170,11 @@ class FoodViewSet(viewsets.ModelViewSet):
 	serializer_class = FoodSerializer
 	permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
-# Recipe CRUD
-class RecipeViewSet(viewsets.ModelViewSet):
-	queryset = Recipe.objects.all()
-	serializer_class = RecipeSerializer
+
+# Meal CRUD
+class MealViewSet(viewsets.ModelViewSet):
+	queryset = Meal.objects.all()
+	serializer_class = MealSerializer
 	permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 # MealPlan CRUD
@@ -190,16 +183,11 @@ class MealPlanViewSet(viewsets.ModelViewSet):
 	serializer_class = MealPlanSerializer
 	permission_classes = [permissions.IsAuthenticated]
 
-# UserPreference CRUD
-class UserPreferenceViewSet(viewsets.ModelViewSet):
-	queryset = UserPreference.objects.all()
-	serializer_class = UserPreferenceSerializer
-	permission_classes = [permissions.IsAuthenticated]
 
-# UserProgress CRUD
-class UserProgressViewSet(viewsets.ModelViewSet):
-	queryset = UserProgress.objects.all()
-	serializer_class = UserProgressSerializer
+# AgentMemory CRUD
+class AgentMemoryViewSet(viewsets.ModelViewSet):
+	queryset = AgentMemory.objects.all()
+	serializer_class = AgentMemorySerializer
 	permission_classes = [permissions.IsAuthenticated]
 
 # User CRUD (read-only)

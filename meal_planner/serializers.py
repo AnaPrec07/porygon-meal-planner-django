@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Food, Recipe, RecipeFood, MealPlan, UserPreference, UserProgress
+from .models import Food, Meal, MealFood, MealPlan, AgentMemory
 from django.contrib.auth.models import User
 
 class FoodSerializer(serializers.ModelSerializer):
@@ -7,38 +7,34 @@ class FoodSerializer(serializers.ModelSerializer):
         model = Food
         fields = '__all__'
 
-class RecipeFoodSerializer(serializers.ModelSerializer):
+class MealFoodSerializer(serializers.ModelSerializer):
     food = FoodSerializer(read_only=True)
     food_id = serializers.PrimaryKeyRelatedField(queryset=Food.objects.all(), source='food', write_only=True)
 
     class Meta:
-        model = RecipeFood
+        model = MealFood
         fields = ['id', 'food', 'food_id', 'quantity']
 
-class RecipeSerializer(serializers.ModelSerializer):
-    foods = RecipeFoodSerializer(source='recipefood_set', many=True, read_only=True)
+class MealSerializer(serializers.ModelSerializer):
+    foods = MealFoodSerializer(source='mealfood_set', many=True, read_only=True)
     class Meta:
-        model = Recipe
+        model = Meal
         fields = ['id', 'name', 'description', 'instructions', 'created_by', 'foods']
 
 class MealPlanSerializer(serializers.ModelSerializer):
-    recipe = RecipeSerializer(read_only=True)
-    recipe_id = serializers.PrimaryKeyRelatedField(queryset=Recipe.objects.all(), source='recipe', write_only=True)
+    meal = MealSerializer(read_only=True)
+    meal_id = serializers.PrimaryKeyRelatedField(queryset=Meal.objects.all(), source='meal', write_only=True)
     class Meta:
         model = MealPlan
-        fields = ['id', 'user', 'date', 'meal_type', 'recipe', 'recipe_id']
+        fields = ['id', 'user', 'date', 'meal_type', 'meal', 'meal_id']
 
-class UserPreferenceSerializer(serializers.ModelSerializer):
-    liked_recipes = RecipeSerializer(many=True, read_only=True)
-    disliked_foods = FoodSerializer(many=True, read_only=True)
-    class Meta:
-        model = UserPreference
-        fields = ['id', 'user', 'dietary_restrictions', 'liked_recipes', 'disliked_foods', 'goal']
 
-class UserProgressSerializer(serializers.ModelSerializer):
+class AgentMemorySerializer(serializers.ModelSerializer):
     class Meta:
-        model = UserProgress
-        fields = '__all__'
+        model = AgentMemory
+        fields = ['id', 'user', 'memory_type', 'content', 'json_payload', 'importance', 'created_at', 'last_accessed', 'active']
+
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
