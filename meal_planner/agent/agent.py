@@ -38,7 +38,7 @@ mindy_agent = LLMAgent(
         """
     ), 
     tools = [PreloadMemoryTool()],
-    before_model_call=inject_memory_context
+    before_model_call=inject_memory_from_sql_to_context
 )
 
 # Step 2: Create the runner.
