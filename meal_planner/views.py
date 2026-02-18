@@ -1,3 +1,43 @@
+from django.shortcuts import render
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+
+# Landing page view for Mindy introduction and MIND diet info
+def landing_page(request):
+	context = {
+		'mindy_intro': (
+			"Hello! I'm Mindy, your friendly nutritionist specializing in the MIND diet. "
+			"I'm here to help you achieve your health goals, stay motivated, and celebrate your milestones. "
+			"Together, we'll create meal plans that follow the MIND diet and support your unique journey!"
+		),
+		'mind_diet_info': (
+			"The MIND diet (Mediterranean-DASH Diet Intervention for Neurodegenerative Delay) combines elements of the Mediterranean and DASH diets. "
+			"It focuses on foods that support brain health and may reduce the risk of Alzheimer's disease."
+		),
+		'mind_diet_constitutes': [
+			"Green leafy vegetables",
+			"Other vegetables",
+			"Nuts",
+			"Berries (especially blueberries)",
+			"Beans",
+			"Whole grains",
+			"Fish",
+			"Poultry",
+			"Olive oil",
+			"Wine (in moderation)"
+		],
+		'mind_diet_benefits': [
+			"Supports brain health",
+			"May lower risk of Alzheimer's and dementia",
+			"Promotes heart health",
+			"Encourages healthy eating habits"
+		],
+		'mindy_helps': (
+			"Mindy helps you organize your goals, track your progress, and stay motivated. "
+			"You'll receive personalized meal plans, encouragement, and support every step of the way!"
+		),
+	}
+	return render(request, 'meal_planner/landing.html', context)
 @api_view(['GET', 'PUT', 'PATCH'])
 @permission_classes([IsAuthenticated])
 def user_mealplans(request):
