@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import FoodViewSet, MealViewSet, MealPlanViewSet, AgentMemoryViewSet, UserViewSet, RegisterUserView, ai_chatbot, accept_recipe, user_mealplans, landing_page
-from .wizard_views import MindDietWizardView
+from .wizard_views import MindDietWizardView, ShoppingListView, DownloadShoppingListPDFView
 
 router = DefaultRouter()
 router.register(r'foods', FoodViewSet)
@@ -12,7 +12,9 @@ router.register(r'users', UserViewSet)
 
 urlpatterns = [
     path('', landing_page, name='landing_page'),
+    path('shopping-list/', ShoppingListView.as_view(), name='shopping_list'),
     path('mind-diet-wizard/', MindDietWizardView.as_view(), name='mind_diet_wizard'),
+    path('download-shopping-list-pdf/', DownloadShoppingListPDFView.as_view(), name='download_shopping_list_pdf'),
     path('api/', include(router.urls)),
     path('api/register/', RegisterUserView.as_view(), name='register'),
     path('api/auth/', include('rest_framework.urls')),  # login/logout for browsable API

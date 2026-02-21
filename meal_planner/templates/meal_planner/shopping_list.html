@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Shopping list for the week of {{ week }}</h2>
+
+{% for category in categories %}
+  <h3>{{ category }}</h3>
+  <ul>
+    {% for item in shopping_list %}
+      {% if item.category == category %}
+        <li>
+           {{ item.name }}: {{ item.qty }} servings of {{ item.serving_size }} to a total of {{ item.qty|floatformat:2 }} x {{ item.serving_size|floatformat:2 }} = {{ item.total_measures|floatformat:2 }} {{item.serving_unit}}.
+      {% endif %}
+    {% endfor %}
+  </ul>
+{% endfor %}
+
+<!-- Button to download as PDF -->
+<form action="{% url 'download_shopping_list_pdf' %}" method="post">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-primary">Download as PDF</button>
+</form>
+{% endblock %}

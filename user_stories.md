@@ -67,15 +67,15 @@ Quality check:
 
 
 ### Feature 2: 
-The app creates a grocery shoppig list for the next x weeks using parameters on: 
-1. Current item inventory 
-2. Perichabiity of items. 
-3. Leverages feature 1 andonly proceeds to create the shopping list if the foods are approevd by the user. 
+The app creates a grocery shoppig list for the next week using parameters on: 
+1. Quantity of servings selected.
+2. Measurements for one serving.
 
-User Story: As a dieter I want to receive a list of foods I need to buy to make meals that follow my diet.
+User Story: As a dieter I want to receive a PDF list of foods I need to buy to make meals that follow my diet.
 
 Success criteria: 
-Given that I'm going to the store, when I ask Mindy to create me a shopping list then Mindy asks me for the number of weeks to plkan for and gives me a list personalized for me, and I accept or reject it.
+Given that I selected the foods I like, when I ask Mindy to create me a shopping list then Mindy translates the 
+quantity of servings I selected for the actual amounts I need to buy, and prompts me if I accept this list. If so, it saves it. 
 
 Quality check: 
 1. Independent: Yes.
@@ -84,6 +84,7 @@ Quality check:
 4. Estimatble: Yes.
 5. Small: Yes.
 6. Testable: Yes.
+
 
 
 ### Feature 3: Flexible Cooking Recipe

@@ -1,3 +1,6 @@
 djangorestframework
 openai
 google-adk
+markdown
+reportlab
+weasyprint

@@ -5,6 +5,16 @@ from .models import MiendDietParameters, Food, Meal, MealPlan
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
+import markdown
+import io
+from django.http import FileResponse
+from datetime import date
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+from datetime import timedelta
+
+# Shopping List View
+from django.views import View
 
 
 class MindDietWizardView(LoginRequiredMixin, FormView):
@@ -12,6 +22,7 @@ class MindDietWizardView(LoginRequiredMixin, FormView):
     form_class = CategorySelectForm
     success_url = reverse_lazy('mind_diet_wizard')
     http_method_names = ['get', 'post']
+
 
     def get(self, request, *args, **kwargs):
         if request.GET.get('restart'):
@@ -66,3 +77,90 @@ class MindDietWizardView(LoginRequiredMixin, FormView):
         # Placeholder: implement logic to generate meal plan using selected_foods
         # For now, just return selected_foods
         return {'selected_foods': selected_foods}
+
+from datetime import date
+
+class ShoppingListView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        selected_foods = request.session.get('selected_foods', {})
+        shopping_list = []
+        categories = []
+        for category, foods in selected_foods.items():
+            categories.append(category)
+            for food_id, qty in foods.items():
+                food_obj = Food.objects.get(id=food_id)
+                serving_size = getattr(food_obj, 'one_serving_qty')
+                serving_unit = getattr(food_obj, 'serving_unit')
+                total_measures = qty * serving_size
+                shopping_list.append({
+                    'name': food_obj.name,
+                    'category': category,
+                    'qty': qty,
+                    'serving_size': serving_size,
+                    'serving_unit': serving_unit,
+                    'total_measures': total_measures
+                })
+        today = date.today()
+        days_ahead = 0 if today.weekday() == 0 else 7 - today.weekday()
+        next_monday = today + timedelta(days=days_ahead)
+        week = next_monday.strftime("%B %d, %Y")
+        return render(request, 'meal_planner/shopping_list.html', {
+            'shopping_list': shopping_list,
+            'categories': categories,
+            'week': week
+        })
+
+class DownloadShoppingListPDFView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        selected_foods = request.session.get('selected_foods', {})
+        categories = []
+        shopping_list = []
+        for category, foods in selected_foods.items():
+            categories.append(category)
+            for food_id, qty in foods.items():
+                food_obj = Food.objects.get(id=food_id)
+                serving_size = getattr(food_obj, 'one_serving_qty')
+                serving_unit = getattr(food_obj, 'serving_unit')
+                total_measures = qty * serving_size
+                shopping_list.append({
+                    'name': food_obj.name,
+                    'category': category,
+                    'qty': qty,
+                    'serving_size': serving_size,
+                    'serving_unit': serving_unit,
+                    'total_measures': total_measures
+                })
+        today = date.today()
+        days_ahead = 0 if today.weekday() == 0 else 7 - today.weekday()
+        next_monday = today + timedelta(days=days_ahead)
+        week = next_monday.strftime("%B %d, %Y")
+        # Build markdown
+        md = f"# Shopping list for the week of {week}\n\n"
+        for category in categories:
+            md += f"## {category}:\n\n"
+            for item in shopping_list:
+                if item['category'] == category:
+                    md += f"- {item['name']}: {item['qty']} servings of {item['serving_size']} to a total of {item['total_measures']} measures.\n"
+            md += "\n"
+        # Convert markdown to HTML
+        html_content = markdown.markdown(md)
+        html_full = f"""
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; }}
+                h1 {{ font-size: 2em; margin-bottom: 0.5em; }}
+                h2 {{ font-size: 1.5em; margin-top: 1em; }}
+                ul {{ margin-left: 1em; }}
+            </style>
+        </head>
+        <body>
+            {html_content}
+        </body>
+        </html>
+        """
+        pdf_file = io.BytesIO()
+        from weasyprint import HTML
+        HTML(string=html_full).write_pdf(pdf_file)
+        pdf_file.seek(0)
+        return FileResponse(pdf_file, as_attachment=True, filename='shopping_list.pdf')
