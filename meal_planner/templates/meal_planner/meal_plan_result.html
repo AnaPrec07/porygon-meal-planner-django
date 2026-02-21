@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Your MIND Diet Meal Plan</h2>
+<p>Selected foods by category:</p>
+<ul>
+{% for category, foods in meal_plan.selected_foods.items %}
+    <li>
+        <strong>{{ category }}</strong>:
+        {% for food_name, qty in foods.items %}
+            {{ food_name }} ({{ qty }}){% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    </li>
+{% endfor %}
+</ul>
+<a href="{% url 'mind_diet_wizard' %}?restart=1" class="btn btn-primary">Restart Wizard</a>
+<!-- Add more details about the generated meal plan here -->
+{% endblock %}

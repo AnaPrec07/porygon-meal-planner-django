@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'meal_planner',
     'rest_framework',
     'rest_framework.authtoken',
+    'import_export',
 ]
 # REST Framework settings
 REST_FRAMEWORK = {
@@ -67,7 +68,7 @@ ROOT_URLCONF = 'backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'meal_planner' / 'templates' / 'meal_planner'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

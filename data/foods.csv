@@ -1,0 +1,71 @@
+﻿name,one_serving_qty,serving_unit,category
+Brown rice (cooked),0.5,cup,whole_grains
+Quinoa (cooked),0.5,cup,whole_grains
+Oatmeal (cooked),0.5,cup,whole_grains
+Whole wheat pasta (cooked),0.5,cup,whole_grains
+Barley (cooked),0.5,cup,whole_grains
+Bulgur (cooked),0.5,cup,whole_grains
+Farro (cooked),0.5,cup,whole_grains
+Whole grain bread,1,slice,whole_grains
+Whole grain tortilla,1,medium tortilla,whole_grains
+Millet (cooked),0.5,cup,whole_grains
+Spinach (raw),1,cup,leafy_greens
+Kale (raw),1,cup,leafy_greens
+Arugula (raw),1,cup,leafy_greens
+Swiss chard (raw),1,cup,leafy_greens
+Romaine lettuce,1,cup,leafy_greens
+Collard greens (cooked),0.5,cup,leafy_greens
+Mustard greens (cooked),0.5,cup,leafy_greens
+Beet greens (raw),1,cup,leafy_greens
+Bok choy (raw),1,cup,leafy_greens
+Mixed spring greens,1,cup,leafy_greens
+Broccoli (cooked),0.5,cup,vegetables
+Carrots (raw),1,cup,vegetables
+Zucchini (cooked),0.5,cup,vegetables
+Bell peppers (raw),1,cup,vegetables
+Cauliflower (cooked),0.5,cup,vegetables
+Brussels sprouts (cooked),0.5,cup,vegetables
+Eggplant (cooked),0.5,cup,vegetables
+Asparagus (cooked),0.5,cup,vegetables
+"Tomatoes (raw, chopped)",1,cup,vegetables
+"Cucumber (raw, sliced)",1,cup,vegetables
+Blueberries,0.5,cup,berries
+Strawberries (halved),0.5,cup,berries
+Raspberries,0.5,cup,berries
+Blackberries,0.5,cup,berries
+Cranberries (fresh),0.5,cup,berries
+Acai berries (unsweetened),0.5,cup,berries
+Goji berries (fresh),0.5,cup,berries
+Mulberries,0.5,cup,berries
+Elderberries,0.5,cup,berries
+Mixed berries,0.5,cup,berries
+Lentils (cooked),0.5,cup,beans
+Chickpeas (cooked),0.5,cup,beans
+Black beans (cooked),0.5,cup,beans
+Kidney beans (cooked),0.5,cup,beans
+Pinto beans (cooked),0.5,cup,beans
+Cannellini beans (cooked),0.5,cup,beans
+Navy beans (cooked),0.5,cup,beans
+Lima beans (cooked),0.5,cup,beans
+Edamame (cooked),0.5,cup,beans
+Split peas (cooked),0.5,cup,beans
+Almonds,28,grams,nuts
+Walnuts,28,grams,nuts
+Pistachios,28,grams,nuts
+Cashews,28,grams,nuts
+Pecans,28,grams,nuts
+Hazelnuts,28,grams,nuts
+Macadamia nuts,28,grams,nuts
+Brazil nuts,28,grams,nuts
+Pine nuts,28,grams,nuts
+Mixed nuts (unsalted),28,grams,nuts
+Salmon (cooked),100,grams,fish
+Sardines (cooked),100,grams,fish
+Mackerel (cooked),100,grams,fish
+Trout (cooked),100,grams,fish
+Herring (cooked),100,grams,fish
+Tuna (cooked),100,grams,fish
+Anchovies,100,grams,fish
+Cod (cooked),100,grams,fish
+Halibut (cooked),100,grams,fish
+Sea bass (cooked),100,grams,fish

@@ -4,17 +4,9 @@ from django.contrib.auth.models import User
 # Food model (dimension)
 class Food(models.Model):
     name = models.CharField(max_length=100)
-    qty = models.CharField(max_length=50)
-    unit = models.CharField(max_length=50)
+    one_serving_qty = models.FloatField()
+    serving_unit = models.CharField(max_length=50)
     category = models.CharField(max_length=50)
-    calories = models.FloatField()
-    protein = models.FloatField()
-    carbs = models.FloatField()
-    fat = models.FloatField()
-    fiber = models.FloatField(null=True, blank=True)
-    sugar = models.FloatField(null=True, blank=True)
-    sodium = models.FloatField(null=True, blank=True)
-    # Add more nutrients as needed
 
     def __str__(self):
         return self.name
@@ -45,6 +37,13 @@ class MealPlan(models.Model):
 
     class Meta:
         unique_together = ('user', 'date', 'meal_type')
+
+class MiendDietParameters(models.Model):
+    category = models.CharField(max_length=100, unique=True)
+    servings_per_week = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"{self.category} ({self.servings_per_week} servings/week)"
 
 class AgentMemory(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

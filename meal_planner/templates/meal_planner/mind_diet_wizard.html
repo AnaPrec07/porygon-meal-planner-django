@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>MIND Diet Wizard - Step {{ step|add:1 }} of {{ categories|length }}</h2>
+<p>Select foods you like from the category: <strong>{{ category }}</strong></p>
+<p>The foods you'll select will be used for <strong>{{ servings }}</strong> servings for the week</p>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    {% if form.helper_text %}
+      <p style="font-style: italic;">{{ form.helper_text }}</p>
+    {% endif %}
+    {% if form.warning_text %}
+      <p style="color: orange;">{{ form.warning_text }}</p>
+    {% endif %}
+    <button type="submit">Next</button>
+</form>
+{% endblock %}
