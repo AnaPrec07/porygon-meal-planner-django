@@ -1,6 +1,28 @@
 from django.shortcuts import render
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from django.http import JsonResponse
+from meal_planner.agent.agent import ask_mindy_for_meal_plan
+import json
+import re
+import json
+from .models import UserMealPlan
+from django.contrib.auth.models import User
+from rest_framework import viewsets, permissions
+from .models import Food, UserMealPlan, AgentMemory
+from .serializers import FoodSerializer, AgentMemorySerializer
+from django.contrib.auth.models import User
+from rest_framework import generics
+from rest_framework.response import Response
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework import status
+from rest_framework.authtoken.models import Token
+from rest_framework.views import APIView
+from .serializers import UserSerializer
+
+# AI Chatbot endpoint (placeholder)
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 
 # Landing page view for Mindy introduction and MIND diet info
 def landing_page(request):
@@ -38,121 +60,9 @@ def landing_page(request):
 		),
 	}
 	return render(request, 'meal_planner/landing.html', context)
-@api_view(['GET', 'PUT', 'PATCH'])
-@permission_classes([IsAuthenticated])
-def user_mealplans(request):
-	"""
-	GET: Return all MealPlan records for the authenticated user, ordered by date.
-	PUT/PATCH: Update a specific MealPlan by id (requires 'id' in data).
-	"""
-	if request.method == 'GET':
-		mealplans = MealPlan.objects.filter(user=request.user).order_by('date')
-		serializer = MealPlanSerializer(mealplans, many=True)
-		return Response(serializer.data)
 
-	elif request.method in ['PUT', 'PATCH']:
-		mealplan_id = request.data.get('id')
-		if not mealplan_id:
-			return Response({'error': 'MealPlan id required.'}, status=400)
-		try:
-			mealplan = MealPlan.objects.get(id=mealplan_id, user=request.user)
-		except MealPlan.DoesNotExist:
-			return Response({'error': 'MealPlan not found.'}, status=404)
-		serializer = MealPlanSerializer(mealplan, data=request.data, partial=(request.method=='PATCH'))
-		if serializer.is_valid():
-			serializer.save()
-			return Response(serializer.data)
-		return Response(serializer.errors, status=400)
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def accept_recipe(request):
-	"""
-	Endpoint for user to accept or reject a recipe.
-	Expects: {
-		'accept': true/false,
-		'recipe': {
-			'name': str,
-			'description': str,
-			'instructions': str,
-			'foods': [
-				{'name': str, 'category': str, 'calories': float, 'protein': float, 'carbs': float, 'fat': float}
-			]
-		},
-		'meal_type': str,  # breakfast/lunch/dinner/snack
-		'date': str (YYYY-MM-DD)
-	}
-	"""
-	data = request.data
-	if not data.get('accept'):
-		return Response({'message': 'Recipe not accepted.'}, status=200)
 
-	recipe_data = data.get('recipe')
-	meal_type = data.get('meal_type')
-	date = data.get('date')
-	if not (recipe_data and meal_type and date):
-		return Response({'error': 'Missing required fields.'}, status=400)
-
-	# Save foods if not exist
-	food_objs = []
-	for food in recipe_data.get('foods', []):
-		food_obj, _ = Food.objects.get_or_create(
-			name=food['name'],
-			defaults={
-				'category': food.get('category', ''),
-				'calories': food.get('calories', 0),
-				'protein': food.get('protein', 0),
-				'carbs': food.get('carbs', 0),
-				'fat': food.get('fat', 0),
-				'fiber': food.get('fiber', 0),
-				'sugar': food.get('sugar', 0),
-				'sodium': food.get('sodium', 0),
-			}
-		)
-		food_objs.append(food_obj)
-
-	# Save recipe if not exist
-	recipe, created = Meal.objects.get_or_create(
-		name=recipe_data['name'],
-		defaults={
-			'description': recipe_data.get('description', ''),
-			'instructions': recipe_data.get('instructions', ''),
-			'created_by': request.user
-		}
-	)
-	# If new, add foods to recipe
-	if created:
-		for food_obj in food_objs:
-			MealFood.objects.create(recipe=recipe, food=food_obj, quantity=100)  # Default quantity
-
-	# Add to MealPlan
-	mealplan, _ = MealPlan.objects.get_or_create(
-		user=request.user,
-		date=date,
-		meal_type=meal_type,
-		defaults={'recipe': recipe}
-	)
-	if not _:
-		mealplan.meal = recipe
-		mealplan.save()
-
-	return Response({'message': 'Recipe accepted and added to meal plan.'}, status=201)
-
-from rest_framework import viewsets, permissions
-from .models import Food, Meal, MealFood, MealPlan, AgentMemory
-from .serializers import FoodSerializer, MealSerializer, MealFoodSerializer, MealPlanSerializer, AgentMemorySerializer
-from django.contrib.auth.models import User
-from rest_framework import generics
-from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework import status
-from rest_framework.authtoken.models import Token
-from rest_framework.views import APIView
-from .serializers import UserSerializer
-
-# AI Chatbot endpoint (placeholder)
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def ai_chatbot(request):
@@ -170,21 +80,6 @@ class FoodViewSet(viewsets.ModelViewSet):
 	serializer_class = FoodSerializer
 	permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
-
-# Meal CRUD
-class MealViewSet(viewsets.ModelViewSet):
-	queryset = Meal.objects.all()
-	serializer_class = MealSerializer
-	permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-
-# MealPlan CRUD
-class MealPlanViewSet(viewsets.ModelViewSet):
-	queryset = MealPlan.objects.all()
-	serializer_class = MealPlanSerializer
-	permission_classes = [permissions.IsAuthenticated]
-
-
-# AgentMemory CRUD
 class AgentMemoryViewSet(viewsets.ModelViewSet):
 	queryset = AgentMemory.objects.all()
 	serializer_class = AgentMemorySerializer
@@ -207,3 +102,33 @@ class RegisterUserView(generics.CreateAPIView):
 		token, created = Token.objects.get_or_create(user=user)
 		response.data['token'] = token.key
 		return response
+	
+def test_mindy_agent(request):
+	# Example selected foods; in practice, get this from request.GET or request.POST
+	user = request.user if request.user.is_authenticated else None
+
+	if request.method == "POST":
+		action = request.POST.get("action")
+		if action == "accept":
+			meal_plan_data = request.session.get("meal_plan_data")
+
+			# Save to UserMealPlan
+			meal_plan_name = request.POST.get("meal_plan_name") or "AI Meal Plan"
+			UserMealPlan.objects.create(
+				user=user,
+				is_active=True,
+				meal_plan_name=meal_plan_name,
+				meal_plan=meal_plan_data
+			)
+			return render(request, "meal_planner/agent_meal_plan.html", {"meal_plan": meal_plan_data, "message": "Meal plan saved!"})
+		else:
+			selected_foods = request.POST.getlist("foods")
+			meal_plan_data = ask_mindy_for_meal_plan(selected_foods)
+			request.session["meal_plan_data"] = meal_plan_data if isinstance(meal_plan_data, dict) else json.loads(meal_plan_data)
+			return render(request, "meal_planner/agent_meal_plan.html", {"meal_plan": meal_plan_data})
+	else:
+		selected_foods = request.POST.getlist("foods")
+		meal_plan_data = ask_mindy_for_meal_plan(selected_foods)
+		request.session["meal_plan_data"] = meal_plan_data if isinstance(meal_plan_data, dict) else json.loads(meal_plan_data)
+
+		return render(request, "meal_planner/agent_meal_plan.html", {"meal_plan": meal_plan_data})

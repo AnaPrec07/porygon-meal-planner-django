@@ -1,28 +1,20 @@
 from typing import Optional
-from google.adk.agents import LLMAgent
+from google.adk.agents import LlmAgent
 from google.adk.tools import ToolContext
 from google.adk.tools.preload_memory_tool import PreloadMemoryTool
 from google.adk.runners import InMemoryRunner
 import asyncio
 from dotenv import load_dotenv
 from google.genai.types import Content, Part
+import json
+import pickle
+
+load_dotenv()
 
 
-
-def inject_memory_from_sql_to_context():
-    # Memory retrieval
-
-    # Short term memory assembly
-    pass
-
-def save_memory_from_context_lo_sql():
-    # Memory retrieval
-
-    # Short term memory assembly
-    pass
 
 # Step 1: Create the agent.
-mindy_agent = LLMAgent(
+mindy_agent = LlmAgent(
     name="nutritionist",
     model="gemini-2.5-flash",
     instruction=(
@@ -38,53 +30,85 @@ mindy_agent = LLMAgent(
         """
     ), 
     tools = [PreloadMemoryTool()],
-    before_model_call=inject_memory_from_sql_to_context
 )
 
-# Step 2: Create the runner.
-runner = InMemoryRunner(agent = mindy_agent, app_name ="meal_planner")
+# Create the runner for the agent
+runner = InMemoryRunner(agent=mindy_agent)
 
-async def run_dialog(new_message:Optional[str]=None):
-    
-    # Get Session ID and User Name
-    session_id = "session_1"
-    user_id = "001"
+async def _ask_mindy_for_meal_plan(
+    selected_foods,
+    user_id,
+    session_id,
+):
+    """This function requests a meal plan from the Mindy Agent.
+    Inputs: selected_foods
+    Output: Meal Plan in Json Format."""
 
-    # Create the session
-    await runner.session_service.create_session(
-        app_name=runner.app_name,
-        user_id = user_id,
-        session_id = session_id
-
+    # Build the prompt
+    foods_str = ", ".join(selected_foods)
+    prompt = (
+        f"Based on the following selected foods: {foods_str}, "
+        "please create a weekly meal plan following the mind diet."
+        "Include complete recipes for each meal."
+        "Return the result as a JSON object only using the below forma. Don't include anything outside this json structure. Format:\n"
+        "{\n"
+        '  "week": [\n'
+        '    {\n'
+        '      "day": "Monday",\n'
+        '      "meals": [\n'
+        '        {\n'
+        '          "name": "Breakfast",\n'
+        '          "recipe": {\n'
+        '            "title": "Oatmeal with Berries",\n'
+        '            "ingredients": ["oats", "blueberries", "almond milk"],\n'
+        '            "instructions": "Mix oats with almond milk, cook, and top with berries."\n'
+        '          }\n'
+        '        },\n'
+        '        ...\n'
+        '      ]\n'
+        '    },\n'
+        '    ...\n'
+        '  ]\n'
+        "}\n"
+        "Only return valid JSON."
     )
 
-    # Get content message
-    dummy_message = "What should I eat today?"
-    content = Content(role="user", parts=[
-        Part(text=new_message)
-    ])
+    message = Content(
+        role="user",
+        parts=[Part(text=prompt)]
+    )
 
-    async def main():
-        runner = InMemoryRunner(agent = "mindy_agent")
-        events = await runner.run_debug("What should I eat today?")
+    # Ensure the session exists
+    async_create_session = await runner.session_service.create_session(
+        app_name=runner.app_name,
+        user_id=user_id,
+    )
 
-        async for event in runner.run_async(
-            user_id = user_id, 
-            sessino_id=session_id, 
-            new_msesage=new_message
-        ):
-            #Check if events have contestn and is from teh agent (not user)
-            if event.content and event.content.parts and event.author !="user":
-                for part in event.contetn.aprts:
-                    if part.text:
-                        print(f"Agent: {part.text}")
-        
-        # After conversation, save to memory
-        session = await runner.session_service.get_sesion()
+    i = 0
+    # Send message to agent and collect response
+    events = ""
+    async for event in runner.run_async(
+        user_id=user_id,
+        session_id=async_create_session.id,
+        new_message=message
+    ):
+        parts_content = event.content.parts[0].text.strip('```json').strip('```').strip()
+        events = events + str(event)
+ 
+    with open(f"./meal_plan_response_raw_again.pkl", "wb") as f:
+        pickle.dump(events, f)
+     
+    with open(f"./meal_plan_response_parts_content.pkl", "wb") as f:
+        pickle.dump(parts_content, f)
+    response = json.loads(parts_content)
+    return response
 
-asyncio.run(run_dialog())
-
-# Short term memory: session
-
-# Long term memory: storage
-
+# Synchronous wrapper for Django views (since Django views are sync by default)
+def ask_mindy_for_meal_plan(selected_foods: list[str], user_id: str = "001", session_id: str = "session_1") -> str:
+    import asyncio
+    import pickle
+    response = asyncio.run(_ask_mindy_for_meal_plan(selected_foods, user_id, session_id))
+    # Save the collected string response using pickle
+    with open("./meal_plan_response.pkl", "wb") as f:
+        pickle.dump(response, f)
+    return response

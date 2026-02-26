@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="mb-4">Your Weekly Meal Plan</h2>
+
+<div style="overflow-x:auto;">
+	<table style="width:100%; border-collapse:collapse; background:#fff;">
+		<thead>
+			<tr style="background:#f0f0f0;">
+				<th style="padding:10px; border:1px solid #ddd;">Day</th>
+				<th style="padding:10px; border:1px solid #ddd;">Meal</th>
+				<th style="padding:10px; border:1px solid #ddd;">Recipe</th>
+				<th style="padding:10px; border:1px solid #ddd;">Ingredients</th>
+				<th style="padding:10px; border:1px solid #ddd;">Instructions</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for day in meal_plan.week %}
+				{% for meal in day.meals %}
+					<tr>
+						{% if forloop.first %}
+							<td style="padding:10px; border:1px solid #ddd; font-weight:bold; background:#f9f9f9;" rowspan="{{ day.meals|length }}">{{ day.day }}</td>
+						{% endif %}
+						<td style="padding:10px; border:1px solid #ddd; font-weight:bold;">{{ meal.name }}</td>
+						<td style="padding:10px; border:1px solid #ddd;">{{ meal.recipe.title }}</td>
+						<td style="padding:10px; border:1px solid #ddd;">
+							<ul style="margin:0; padding-left:18px;">
+								{% for ingredient in meal.recipe.ingredients %}
+									<li>{{ ingredient }}</li>
+								{% endfor %}
+							</ul>
+						</td>
+						<td style="padding:10px; border:1px solid #ddd; white-space:pre-line;">{{ meal.recipe.instructions }}</td>
+					</tr>
+				{% endfor %}
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
+
+<div style="margin-top:32px; display:flex; gap:16px; align-items:center;">
+	<form method="post" style="display:inline;">
+		{% csrf_token %}
+		<label for="regenerate_input" style="margin-right:8px;">Regenerate meal plan with:</label>
+		<input type="text" id="regenerate_input" name="regenerate_input" placeholder="e.g. vegetarian, high protein" style="padding:6px; border-radius:4px; border:1px solid #ccc;">
+		<button type="submit" name="action" value="regenerate" style="padding:8px 16px; border:none; background:#007bff; color:#fff; border-radius:4px; cursor:pointer;">Regenerate Meal Plan</button>
+	</form>
+	<form method="post" style="display:inline;">
+		{% csrf_token %}
+		<button type="submit" name="action" value="accept" style="padding:8px 16px; border:none; background:#28a745; color:#fff; border-radius:4px; cursor:pointer;">Accept Meal Plan</button>
+	</form>
+</div>
+
+{% endblock %}

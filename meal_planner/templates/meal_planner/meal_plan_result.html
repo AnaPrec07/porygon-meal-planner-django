@@ -12,6 +12,16 @@
     </li>
 {% endfor %}
 </ul>
+
+<form method="post" action="{% url 'generate_agent_meal_plan' %}">
+    {% csrf_token %}
+    {% for category, foods in meal_plan.selected_foods.items %}
+        {% for food_name, qty in foods.items %}
+            <input type="hidden" name="foods" value="{{ food_name }}">
+        {% endfor %}
+    {% endfor %}
+    <button type="submit" class="btn btn-success">Generate Meal Plan</button>
+</form>
 <a href="{% url 'mind_diet_wizard' %}?restart=1" class="btn btn-primary">Restart Wizard</a>
 <a href="{% url 'shopping_list' %}?" class="btn btn-primary">Create Shopping List</a>
 <!-- Add more details about the generated meal plan here -->

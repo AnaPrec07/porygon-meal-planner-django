@@ -11,32 +11,13 @@ class Food(models.Model):
     def __str__(self):
         return self.name
 
-# Meal model (dimension/transactional)
-class Meal(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
-    instructions = models.TextField(blank=True)
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    # Optionally add tags, cuisine, etc.
-
-    def __str__(self):
-        return self.name
-
-# Through model for Meal and Food (quantities)
-class MealFood(models.Model):
-    meal = models.ForeignKey(Meal, on_delete=models.CASCADE)
-    food = models.ForeignKey(Food, on_delete=models.CASCADE)
-    quantity = models.FloatField(help_text="Quantity in grams or units")
-
 # MealPlan model (fact/transactional)
-class MealPlan(models.Model):
+class UserMealPlan(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    date = models.DateField()
-    meal_type = models.CharField(max_length=20, choices=[('breakfast','Breakfast'),('lunch','Lunch'),('dinner','Dinner'),('snack','Snack')])
-    meal = models.ForeignKey(Meal, on_delete=models.CASCADE)
-
-    class Meta:
-        unique_together = ('user', 'date', 'meal_type')
+    is_active = models.BooleanField()
+    meal_plan_name = models.CharField(max_length=100)
+    meal_plan = models.JSONField()
+    created_at = models.DateTimeField(auto_now_add=True)
 
 class MiendDietParameters(models.Model):
     category = models.CharField(max_length=100, unique=True)

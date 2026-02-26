@@ -1,7 +1,7 @@
 from django.views.generic import FormView, TemplateView
 from django.urls import reverse_lazy
 from .forms import CategorySelectForm, FoodSelectForm
-from .models import MiendDietParameters, Food, Meal, MealPlan
+from .models import MiendDietParameters, Food
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
